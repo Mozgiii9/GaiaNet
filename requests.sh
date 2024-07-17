@@ -28,6 +28,10 @@ cat << EOF > $PYTHON_SCRIPT_NAME
 import requests
 import time
 import random
+import logging
+
+# Настройка логирования
+logging.basicConfig(filename="request_script.log", level=logging.INFO, format="%(asctime)s - %(message)s")
 
 # URL и заголовки для запроса
 url = input("Введите URL для отправки запроса: ")
@@ -85,11 +89,12 @@ def send_request():
             {"role": "user", "content": question}
         ]
     }
+    logging.info(f"Отправка запроса с вопросом: {question}")
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
-        print(f"Response: {response.json()}")
+        logging.info(f"Ответ: {response.json()}")
     else:
-        print(f"Failed to get response, status code: {response.status_code}")
+        logging.error(f"Ошибка получения ответа, статус-код: {response.status_code}")
 
 # Основной цикл
 def main():
@@ -104,16 +109,16 @@ def main():
             send_request()
             # Случайная задержка между запросами от 1 до 5 минут
             delay = random.randint(60, 300)
-            print(f"Waiting for {delay // 60} minutes...")
+            logging.info(f"Ожидание {delay // 60} минут...")
             time.sleep(delay)
 
         # Длинный перерыв от 30 минут до 1 часа
         long_break = random.randint(1800, 3600)
-        print(f"Taking a break for {long_break // 60} minutes...")
+        logging.info(f"Перерыв на {long_break // 60} минут...")
         time.sleep(long_break)
 
         # Перерыв на сон каждые 24 часа
-        print(f"Sleeping for {sleep_hours} hours...")
+        logging.info(f"Сон на {sleep_hours} часов...")
         time.sleep(sleep_seconds)
 
 if __name__ == "__main__":
