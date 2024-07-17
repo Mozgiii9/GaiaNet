@@ -30,8 +30,8 @@ import time
 import random
 import logging
 
-# Настройка логирования
-logging.basicConfig(filename="request_script.log", level=logging.INFO, format="%(asctime)s - %(message)s")
+# Настройка логирования для вывода в консоль
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 # URL и заголовки для запроса
 url = input("Введите URL для отправки запроса: ")
@@ -135,7 +135,7 @@ else
 fi
 
 # Запуск Python скрипта в фоновом режиме через screen
-screen -dmS python_script_session python3 $PYTHON_SCRIPT_NAME
+screen -dmS python_script_session bash -c "python3 $PYTHON_SCRIPT_NAME | tee -a request_script.log"
 
 echo "Скрипт $PYTHON_SCRIPT_NAME запущен в фоновом режиме через screen."
-echo "Чтобы подключиться к сессии screen, используйте команду: screen -r python_script_session"
+echo "Чтобы подключиться к сессии screen и посмотреть логи, используйте команду: screen -r python_script_session"
