@@ -28,7 +28,6 @@ sudo apt install screen -y
 
 # Загрузка и запуск установочного скрипта ноды GaiaNet
 curl -sSfL 'https://github.com/GaiaNet-AI/gaianet-node/releases/latest/download/install.sh' | bash
-source /root/.bashrc
-gaianet init
-gaianet start
-gaianet info
+
+# Выполнение команд в новом процессе оболочки, чтобы окружение было правильно настроено
+bash -c "source /root/.bashrc && gaianet init && gaianet start && gaianet info"
