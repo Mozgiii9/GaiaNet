@@ -1,13 +1,42 @@
+#!/bin/bash
+
+# Название файла для Python скрипта
+PYTHON_SCRIPT_NAME="request_script.py"
+
+# Проверка, установлен ли Python, и установка, если он не установлен
+if ! command -v python3 &> /dev/null
+then
+    echo "Python3 не найден, устанавливаем..."
+    sudo apt update
+    sudo apt install python3 python3-pip -y
+else
+    echo "Python3 уже установлен"
+fi
+
+# Установка библиотеки requests, если она не установлена
+pip3 show requests &> /dev/null
+if [ $? -ne 0 ]; then
+    echo "Библиотека requests не найдена, устанавливаем..."
+    pip3 install requests
+else
+    echo "Библиотека requests уже установлена"
+fi
+
+# Создание Python скрипта
+echo "Создаем Python скрипт..."
+cat << EOF > $PYTHON_SCRIPT_NAME
 import requests
 import time
 import random
 
+# URL и заголовки для запроса
 url = input("Введите URL для отправки запроса: ")
 headers = {
     'accept': 'application/json',
     'Content-Type': 'application/json'
 }
 
+# 100 вопросов для рандомизации
 questions = [
     "Where is Paris?", "What is the capital of Germany?", "How far is the moon from the Earth?",
     "Who wrote 'To Kill a Mockingbird'?", "What is the speed of light?", "How many continents are there?",
@@ -45,8 +74,11 @@ questions = [
     "Who wrote 'Crime and Punishment'?", "What is the capital of Malaysia?", "Who painted 'The Persistence of Memory'?"
 ]
 
+# Функция для отправки запроса
 def send_request():
+    # Выбираем случайный вопрос
     question = random.choice(questions)
+    # Формируем тело запроса
     data = {
         "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
@@ -59,25 +91,46 @@ def send_request():
     else:
         print(f"Failed to get response, status code: {response.status_code}")
 
+# Основной цикл
 def main():
-    sleep_hours = 8
-    sleep_seconds = sleep_hours * 3600
+    sleep_hours = 8  # Часы для сна
+    sleep_seconds = sleep_hours * 3600  # Перевод в секунды
 
     while True:
-        num_requests = random.randint(6, 12)
+        # Определяем случайное количество запросов перед длинным перерывом
+        num_requests = random.randint(6, 12)  # От 6 до 12 запросов (в среднем около часа)
 
         for _ in range(num_requests):
             send_request()
+            # Случайная задержка между запросами от 1 до 5 минут
             delay = random.randint(60, 300)
             print(f"Waiting for {delay // 60} minutes...")
             time.sleep(delay)
 
+        # Длинный перерыв от 30 минут до 1 часа
         long_break = random.randint(1800, 3600)
         print(f"Taking a break for {long_break // 60} minutes...")
         time.sleep(long_break)
 
+        # Перерыв на сон каждые 24 часа
         print(f"Sleeping for {sleep_hours} hours...")
         time.sleep(sleep_seconds)
 
 if __name__ == "__main__":
     main()
+EOF
+
+# Установка screen, если не установлен
+if ! command -v screen &> /dev/null
+then
+    echo "screen не найден, устанавливаем..."
+    sudo apt install screen -y
+else
+    echo "screen уже установлен"
+fi
+
+# Запуск Python скрипта в фоновом режиме через screen
+screen -dmS python_script_session python3 $PYTHON_SCRIPT_NAME
+
+echo "Скрипт $PYTHON_SCRIPT_NAME запущен в фоновом режиме через screen."
+echo "Чтобы подключиться к сессии screen, используйте команду: screen -r python_script_session"
