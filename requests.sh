@@ -2,6 +2,7 @@
 
 # Название файла для Python скрипта
 PYTHON_SCRIPT_NAME="request_script.py"
+VENV_DIR="venv"
 
 # Проверка, запущен ли скрипт с правами суперпользователя
 if [ "$EUID" -ne 0 ]; then
@@ -14,7 +15,7 @@ if ! command -v python3 &> /dev/null
 then
     echo "Python3 не найден, устанавливаем..."
     apt update
-    apt install python3 python3-pip -y
+    apt install python3 -y
 else
     echo "Python3 уже установлен"
 fi
@@ -31,6 +32,7 @@ fi
 if ! command -v pip3 &> /dev/null
 then
     echo "pip3 не найден, устанавливаем..."
+    apt update
     apt install python3-pip -y
 else
     echo "pip3 уже установлен"
@@ -45,7 +47,6 @@ else
 fi
 
 # Создание виртуального окружения
-VENV_DIR="venv"
 if [ ! -d "$VENV_DIR" ]; then
     python3 -m venv $VENV_DIR
 fi
@@ -54,8 +55,7 @@ fi
 source $VENV_DIR/bin/activate
 
 # Установка библиотеки requests, если она не установлена
-pip3 show requests &> /dev/null
-if [ $? -ne 0 ]; then
+if ! pip3 show requests &> /dev/null; then
     echo "Библиотека requests не найдена, устанавливаем..."
     pip3 install requests
 else
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     main()
 EOF
 
-# Установка screen, если не установлен
+# Проверка, установлен ли screen
 if ! command -v screen &> /dev/null
 then
     echo "screen не найден, устанавливаем..."
