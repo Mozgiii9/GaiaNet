@@ -13,10 +13,27 @@ fi
 if ! command -v python3 &> /dev/null
 then
     echo "Python3 не найден, устанавливаем..."
-    sudo apt update
-    sudo apt install python3 python3-pip -y
+    apt update
+    apt install python3 python3-pip -y
 else
     echo "Python3 уже установлен"
+fi
+
+# Установка python3-venv, если не установлен
+if ! dpkg -s python3-venv &> /dev/null; then
+    echo "Устанавливаем python3-venv..."
+    apt install python3-venv -y
+else
+    echo "python3-venv уже установлен"
+fi
+
+# Проверка, установлен ли pip, и установка, если он не установлен
+if ! command -v pip3 &> /dev/null
+then
+    echo "pip3 не найден, устанавливаем..."
+    apt install python3-pip -y
+else
+    echo "pip3 уже установлен"
 fi
 
 # Установка virtualenv, если не установлен
@@ -155,7 +172,7 @@ EOF
 if ! command -v screen &> /dev/null
 then
     echo "screen не найден, устанавливаем..."
-    sudo apt install screen -y
+    apt install screen -y
 else
     echo "screen уже установлен"
 fi
