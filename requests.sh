@@ -3,6 +3,12 @@
 # Название файла для Python скрипта
 PYTHON_SCRIPT_NAME="request_script.py"
 
+# Проверка, запущен ли скрипт с правами суперпользователя
+if [ "$EUID" -ne 0 ]; then
+    echo "Пожалуйста, запустите скрипт с правами суперпользователя (sudo)."
+    exit 1
+fi
+
 # Проверка, установлен ли Python, и установка, если он не установлен
 if ! command -v python3 &> /dev/null
 then
@@ -12,6 +18,23 @@ then
 else
     echo "Python3 уже установлен"
 fi
+
+# Установка virtualenv, если не установлен
+if ! pip3 show virtualenv &> /dev/null; then
+    echo "Устанавливаем virtualenv..."
+    pip3 install virtualenv
+else
+    echo "virtualenv уже установлен"
+fi
+
+# Создание виртуального окружения
+VENV_DIR="venv"
+if [ ! -d "$VENV_DIR" ]; then
+    python3 -m venv $VENV_DIR
+fi
+
+# Активация виртуального окружения
+source $VENV_DIR/bin/activate
 
 # Установка библиотеки requests, если она не установлена
 pip3 show requests &> /dev/null
@@ -80,21 +103,24 @@ questions = [
 
 # Функция для отправки запроса
 def send_request():
-    # Выбираем случайный вопрос
-    question = random.choice(questions)
-    # Формируем тело запроса
-    data = {
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": question}
-        ]
-    }
-    logging.info(f"Отправка запроса с вопросом: {question}")
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        logging.info(f"Ответ: {response.json()}")
-    else:
-        logging.error(f"Ошибка получения ответа, статус-код: {response.status_code}")
+    try:
+        # Выбираем случайный вопрос
+        question = random.choice(questions)
+        # Формируем тело запроса
+        data = {
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": question}
+            ]
+        }
+        logging.info(f"Отправка запроса с вопросом: {question}")
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            logging.info(f"Ответ: {response.json()}")
+        else:
+            logging.error(f"Ошибка получения ответа, статус-код: {response.status_code}")
+    except Exception as e:
+        logging.error(f"Произошла ошибка при отправке запроса: {str(e)}")
 
 # Основной цикл
 def main():
@@ -135,7 +161,7 @@ else
 fi
 
 # Запуск Python скрипта в фоновом режиме через screen
-screen -dmS python_script_session bash -c "python3 $PYTHON_SCRIPT_NAME | tee -a request_script.log"
+screen -dmS python_script_session bash -c "source $VENV_DIR/bin/activate && python3 $PYTHON_SCRIPT_NAME | tee -a request_script.log"
 
 echo "Скрипт $PYTHON_SCRIPT_NAME запущен в фоновом режиме через screen."
 echo "Чтобы подключиться к сессии screen и посмотреть логи, используйте команду: screen -r python_script_session"
